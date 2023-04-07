@@ -5,7 +5,8 @@ const maxRadiusRatio = 15;
 const minRadiusRatio = 500;
 let minRadius, maxRadius;
 const initialShapes = 100;
-const density = .1
+const density = .0001
+const forceConstant = 0.2
 
 function MyShape({
     x,
@@ -89,6 +90,8 @@ function calculatePairwiseForce(s1, s2) {
 
     // force is inversely proportional to distance between shapes 
     diff.div(d);
+
+    diff.mult(forceConstant * s1.mass() * s2.mass())
     return diff;
 
 }
@@ -101,8 +104,8 @@ function calculateForce(shapes, i) {
         if (force === null) {
             continue;
         }
-        shape.force.add(force * other.mass());
-        other.force.sub(force * shape.mass());
+        shape.force.add(force);
+        other.force.sub(force);
         shape.neighbors += 1;
         other.neighbors += 1;
     }

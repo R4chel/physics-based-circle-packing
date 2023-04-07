@@ -1,10 +1,10 @@
 let shapes;
 let colors;
 
-const maxRadiusRatio = 5;
+const maxRadiusRatio = 15;
 const minRadiusRatio = 500;
 let minRadius, maxRadius;
-const initialShapes = 100;
+const initialShapes = 15;
 
 function MyShape({
     x,
@@ -12,10 +12,11 @@ function MyShape({
     r
 }) {
     this.p = createVector(x, y);
-    this.acceleration = createVector(0, 0);
     this.velocity = p5.Vector.random2D();
     this.color = random(colors);
     this.r = r;
+    this.force = createVector(0, 0);
+    this.neighbors = 0;
 
     this.draw = function() {
         fill(this.color);
@@ -23,9 +24,15 @@ function MyShape({
     };
 
     this.update = function() {
-        this.velocity.add(this.acceleration);
+        if (this.neighbors == 0) {
+            this.velocity.set(0, 0);
+            return;
+        }
+        this.force.div(this.neighbors);
+        this.velocity.add(this.force);
         this.p.add(this.velocity);
-        this.acceleration.set(0, 0);
+        this.force.set(0, 0);
+        this.neighbors = 0;
     };
 
     this.checkBorders = function() {
@@ -51,20 +58,41 @@ function setup() {
 
     noStroke();
     shapes = [...new Array(initialShapes)].map(() => new MyShape({
-        x: random(width),
-        y: random(height),
-        r: 20
+        x: width / 2,
+        y: height / 2,
+        r: random(minRadius, maxRadius)
     }));
 }
 
-function maxSize(x, y) {
-    let m = maxRadius;
-    for (let i = 0; i < circles.length; i++) {
-        let c = circles[i];
-        let distance = dist(x, y, c.x, c.y);
-        m = min([distance - c.r / 2, m]);
+function calculatePairwiseForce(s1, s2) {
+    let d = p5.Vector.dist(s1.p, s2.p);
+    // if shapes don't touch, they don't exert a force on eachother
+    if (d > s1.r + s2.r) {
+        return null;
     }
-    return m;
+    // direction is based on difference
+    let diff = p5.Vector.sub(s1.p, s2.p);
+    diff.normalize();
+
+    // force is inversely proportional to distance between shapes 
+    diff.div(d);
+    return diff;
+
+}
+
+function calculateForce(shapes, i) {
+    let shape = shapes[i];
+    for (let j = i + 1; j < shapes.length; j++) {
+        let other = shapes[j];
+        let force = calculatePairwiseForce(shape, other);
+        if (force === null) {
+            continue;
+        }
+        shape.force.add(force);
+        other.force.sub(force);
+        shape.neighbors += 1;
+        other.neighbors += 1;
+    }
 }
 
 function draw() {
@@ -74,8 +102,10 @@ function draw() {
         let s = shapes[i];
         s.draw();
         s.checkBorders();
+        calculateForce(shapes, i);
         s.update();
     }
+
 
 
 }

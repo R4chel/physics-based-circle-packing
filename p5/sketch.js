@@ -5,9 +5,12 @@ const maxRadiusRatio = 15;
 const minRadiusRatio = 500;
 let minRadius, maxRadius;
 const initialShapes = 100;
-const density = .0001
-const forceConstant = 0.2
-const drag = 0.9
+var density = .01
+var forceConstant = 0.2
+var drag = 0.9
+var forceConstantStep = 0.05
+var dragStep = 0.05
+
 
 function MyShape({
     x,
@@ -16,7 +19,8 @@ function MyShape({
 }) {
     this.p = createVector(x, y);
     this.velocity = p5.Vector.random2D();
-    this.color = random(colors);
+    this.color = color(random(colors));
+    this.color.setAlpha(20)
     this.r = r;
     this.force = createVector(0, 0);
     this.neighbors = 0;
@@ -24,21 +28,27 @@ function MyShape({
 
     this.mass = function() {
         return this.r * this.r * density
-    }
+    };
+
     this.draw = function() {
         fill(this.color);
         circle(this.p.x, this.p.y, this.r);
     };
 
     this.update = function() {
-        if (this.neighbors > 0) {
-            this.force.div(this.neighbors * this.mass());
-        } else {
-            if (this.force.magSq() != 0) {
-                print("huh")
-            }
-            this.velocity.mult(drag)
+        if (this.neighbors == 0) {
+
+            this.velocity.mult(drag);
         }
+        // if (this.neighbors > 0) {
+        //     // this.force.div(this.neighbors * this.mass());
+        // } else {
+        //     if (this.force.magSq() != 0) {
+        //         print("huh");
+        //     }
+        //     this.velocity.mult(drag);
+        // }
+        this.force.div(this.mass());
         this.velocity.add(this.force);
         this.p.add(this.velocity);
         this.force.set(0, 0);
@@ -54,8 +64,13 @@ function MyShape({
             this.velocity.y *= -1;
             this.p.add(this.velocity);
         }
-    }
 
+        // shapes were getting trapped on the outside. This is a ..... fix
+        if (this.p.x < 0 || this.p.x > width || this.p.y < 0 || this.p.y > height) {
+            this.p.set(random(width), random(height));
+        }
+
+    };
 }
 
 function setup() {
@@ -65,8 +80,18 @@ function setup() {
     maxRadius = max(width, height) / maxRadiusRatio;
     ellipseMode(RADIUS);
 
+
+
     colorMode(RGB, 255);
-    colors = [color(236, 232, 125), color(52, 115, 76), color(83, 176, 193)];
+    colors = [(236, 232, 125), (52, 115, 76), (83, 176, 193)];
+
+    var gui = createGui('Gooey gui');
+    gui.addGlobals(
+        'drag',
+        'forceConstant',
+        'density',
+    );
+
 
     noStroke();
     shapes = [...new Array(initialShapes)].map(() => new MyShape({
@@ -84,16 +109,16 @@ function calculatePairwiseForce(s1, s2) {
     }
     // avoiding division by 0 issue (although not sure what number to be here)
     if (d == 0) {
-        d = 1;
+        d = .01;
     }
     // direction is based on difference
     let diff = p5.Vector.sub(s1.p, s2.p);
     diff.normalize();
 
     // force is inversely proportional to distance between shapes 
-    diff.div(d);
+    diff.div(d * d);
 
-    diff.mult(forceConstant * s1.mass() * s2.mass())
+    diff.mult(forceConstant * s1.mass() * s2.mass());
     return diff;
 
 }

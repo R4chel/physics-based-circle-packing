@@ -5,7 +5,7 @@ const maxRadiusRatio = 15;
 const minRadiusRatio = 500;
 let minRadius, maxRadius;
 const initialShapes = 100;
-var density = .5
+var density = 1
 var forceConstant = 0.05
 var drag = 0.9
 var forceConstantStep = 0.005
@@ -14,6 +14,7 @@ var dragStep = 0.05
 var dragMax = 1.05
 var densityMin = 0.05
 var densityStep = 0.05
+var maxForce = 5000
 
 
 function MyShape({
@@ -40,7 +41,7 @@ function MyShape({
     };
 
     this.update = function() {
-        if (this.neighbors == 0) {
+        if (this.neighbors == 0 || this.velocity > this.maxVelocity) {
 
             this.velocity.mult(drag);
         }
@@ -52,6 +53,7 @@ function MyShape({
         //     }
         //     this.velocity.mult(drag);
         // }
+        this.force.limit(maxForce)
         this.force.div(this.mass());
         this.velocity.add(this.force);
         this.p.add(this.velocity);
@@ -94,6 +96,8 @@ function setup() {
         'drag',
         'forceConstant',
         'density',
+        'maxVelocity',
+        'maxForce'
     );
 
 
@@ -145,14 +149,17 @@ function calculateForce(shapes, i) {
 function draw() {
     background(240);
 
+    let maximumForce = 0
     for (let i = 0; i < shapes.length; i++) {
         let s = shapes[i];
         s.draw();
         s.checkBorders();
         calculateForce(shapes, i);
+        maximumForce = max(s.force.mag(), maximumForce)
         s.update();
     }
 
+    print(maximumForce)
 
 
 }

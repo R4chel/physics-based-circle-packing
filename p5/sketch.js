@@ -160,6 +160,13 @@ function draw() {
     }
 
     print(maximumForce)
+    if (maximumForce == 0) {
+        shapes.push(new MyShape({
+            x: random(width),
+            y: random(height),
+            r: random(minRadius, maxRadius)
+        }))
+    }
 
 
 }

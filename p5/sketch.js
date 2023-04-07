@@ -7,6 +7,7 @@ let minRadius, maxRadius;
 const initialShapes = 100;
 const density = .0001
 const forceConstant = 0.2
+const drag = 0.9
 
 function MyShape({
     x,
@@ -33,9 +34,10 @@ function MyShape({
         if (this.neighbors > 0) {
             this.force.div(this.neighbors * this.mass());
         } else {
-            if (this.force.mag() != 0) {
+            if (this.force.magSq() != 0) {
                 print("huh")
             }
+            this.velocity.mult(drag)
         }
         this.velocity.add(this.force);
         this.p.add(this.velocity);

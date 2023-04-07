@@ -70,6 +70,10 @@ function calculatePairwiseForce(s1, s2) {
     if (d > s1.r + s2.r) {
         return null;
     }
+    // avoiding division by 0 issue (although not sure what number to be here)
+    if (d == 0) {
+        d = 1;
+    }
     // direction is based on difference
     let diff = p5.Vector.sub(s1.p, s2.p);
     diff.normalize();

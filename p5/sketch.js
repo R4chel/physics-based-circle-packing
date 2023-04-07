@@ -11,11 +11,11 @@ function MyShape({
     y,
     r
 }) {
-    this.p = createVector(x, y)
-    this.acceleration = createVector(0, 0)
+    this.p = createVector(x, y);
+    this.acceleration = createVector(0, 0);
     this.velocity = p5.Vector.random2D();
-    this.color = random(colors)
-    this.r = r
+    this.color = random(colors);
+    this.r = r;
 
     this.draw = function() {
         fill(this.color);
@@ -23,9 +23,18 @@ function MyShape({
     };
 
     this.update = function() {
-        this.acceleration.add(random(-0.01, 0.01), random(-0.01, 0.01))
-        this.velocity.add(this.acceleration)
-        this.p.add(this.velocity)
+        this.velocity.add(this.acceleration);
+        this.p.add(this.velocity);
+        this.acceleration.set(0, 0);
+    };
+
+    this.checkBorders = function() {
+        if (this.p.x - this.r < 0 || this.p.x + this.r > width) {
+            this.velocity.x *= -1;
+        }
+        if (this.p.y - this.r < 0 || this.p.y + this.r > height) {
+            this.velocity.y *= -1;
+        }
     }
 
 }
@@ -64,6 +73,7 @@ function draw() {
     for (let i = 0; i < shapes.length; i++) {
         let s = shapes[i];
         s.draw();
+        s.checkBorders();
         s.update();
     }
 

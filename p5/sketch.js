@@ -5,6 +5,7 @@ const maxRadiusRatio = 15;
 const minRadiusRatio = 500;
 let minRadius, maxRadius;
 const initialShapes = 100;
+const density = .1
 
 function MyShape({
     x,
@@ -18,17 +19,23 @@ function MyShape({
     this.force = createVector(0, 0);
     this.neighbors = 0;
 
+
+    this.mass = function() {
+        return this.r * this.r * density
+    }
     this.draw = function() {
         fill(this.color);
         circle(this.p.x, this.p.y, this.r);
     };
 
     this.update = function() {
-        if (this.neighbors == 0) {
-            // this.velocity.set(0, 0);
-            return;
+        if (this.neighbors > 0) {
+            this.force.div(this.neighbors * this.mass());
+        } else {
+            if (this.force.mag() != 0) {
+                print("huh")
+            }
         }
-        this.force.div(this.neighbors * this.r * this.r);
         this.velocity.add(this.force);
         this.p.add(this.velocity);
         this.force.set(0, 0);
@@ -94,8 +101,8 @@ function calculateForce(shapes, i) {
         if (force === null) {
             continue;
         }
-        shape.force.add(force);
-        other.force.sub(force);
+        shape.force.add(force * other.mass());
+        other.force.sub(force * shape.mass());
         shape.neighbors += 1;
         other.neighbors += 1;
     }

@@ -5,11 +5,15 @@ const maxRadiusRatio = 15;
 const minRadiusRatio = 500;
 let minRadius, maxRadius;
 const initialShapes = 100;
-var density = .01
-var forceConstant = 0.2
+var density = .5
+var forceConstant = 0.05
 var drag = 0.9
-var forceConstantStep = 0.05
+var forceConstantStep = 0.005
+var forceConstantMax = 0.5
 var dragStep = 0.05
+var dragMax = 1.05
+var densityMin = 0.05
+var densityStep = 0.05
 
 
 function MyShape({
@@ -20,7 +24,7 @@ function MyShape({
     this.p = createVector(x, y);
     this.velocity = p5.Vector.random2D();
     this.color = color(random(colors));
-    this.color.setAlpha(20)
+    this.color.setAlpha(200)
     this.r = r;
     this.force = createVector(0, 0);
     this.neighbors = 0;
@@ -95,8 +99,8 @@ function setup() {
 
     noStroke();
     shapes = [...new Array(initialShapes)].map(() => new MyShape({
-        x: width / 2,
-        y: height / 2,
+        x: random(width),
+        y: random(height),
         r: random(minRadius, maxRadius)
     }));
 }

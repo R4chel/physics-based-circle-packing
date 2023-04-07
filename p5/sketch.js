@@ -25,10 +25,10 @@ function MyShape({
 
     this.update = function() {
         if (this.neighbors == 0) {
-            this.velocity.set(0, 0);
+            // this.velocity.set(0, 0);
             return;
         }
-        this.force.div(this.neighbors);
+        this.force.div(this.neighbors * this.r * this.r);
         this.velocity.add(this.force);
         this.p.add(this.velocity);
         this.force.set(0, 0);

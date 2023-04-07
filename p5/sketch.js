@@ -4,7 +4,7 @@ let colors;
 const maxRadiusRatio = 15;
 const minRadiusRatio = 500;
 let minRadius, maxRadius;
-const initialShapes = 150;
+const initialShapes = 100;
 
 function MyShape({
     x,

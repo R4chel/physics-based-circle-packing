@@ -4,7 +4,7 @@ let colors;
 const maxRadiusRatio = 15;
 const minRadiusRatio = 500;
 let minRadius, maxRadius;
-const initialShapes = 15;
+const initialShapes = 150;
 
 function MyShape({
     x,
@@ -38,9 +38,11 @@ function MyShape({
     this.checkBorders = function() {
         if (this.p.x - this.r < 0 || this.p.x + this.r > width) {
             this.velocity.x *= -1;
+            this.p.add(this.velocity);
         }
         if (this.p.y - this.r < 0 || this.p.y + this.r > height) {
             this.velocity.y *= -1;
+            this.p.add(this.velocity);
         }
     }
 

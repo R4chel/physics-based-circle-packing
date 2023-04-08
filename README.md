@@ -1,5 +1,5 @@
-# perlin-noise-circle-packing
-Exploration of controlled circle packing. 
+# physics-based-circle-packing
+Exploration of circle packing using a physics simulation of repelling particles. (For the loosest definition of all of those words). 
 
 
 I will be implementing the algorithm in a few languages.

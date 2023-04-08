@@ -91,14 +91,14 @@ function setup() {
     colorMode(RGB, 255);
     colors = [color(236, 232, 125), color(52, 115, 76), color(83, 176, 193)];
 
-    var gui = createGui('Gooey gui');
-    gui.addGlobals(
-        'drag',
-        'forceConstant',
-        'density',
-        'maxVelocity',
-        'maxForce'
-    );
+    // var gui = createGui('Gooey gui');
+    // gui.addGlobals(
+    //     'drag',
+    //     'forceConstant',
+    //     'density',
+    //     'maxVelocity',
+    //     'maxForce'
+    // );
 
 
     noStroke();

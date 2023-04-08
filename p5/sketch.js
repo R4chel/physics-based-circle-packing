@@ -4,7 +4,7 @@ let colors;
 const maxRadiusRatio = 15;
 const minRadiusRatio = 500;
 let minRadius, maxRadius;
-const initialShapes = 100;
+const initialShapes = 200;
 var density = 1
 var forceConstant = 0.05
 var drag = 0.9
@@ -14,7 +14,7 @@ var dragStep = 0.05
 var dragMax = 1.05
 var densityMin = 0.05
 var densityStep = 0.05
-var maxForce = 5000
+var maxForce = 50000
 
 
 function MyShape({

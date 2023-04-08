@@ -2,9 +2,9 @@ let shapes;
 let colors;
 
 const maxRadiusRatio = 15;
-const minRadiusRatio = 500;
+const minRadiusRatio = 1000;
 let minRadius, maxRadius;
-const initialShapes = 200;
+const initialShapes = 125;
 var density = 1
 var forceConstant = 0.05
 var drag = 0.9
@@ -25,8 +25,8 @@ function MyShape({
     this.p = createVector(x, y);
     this.velocity = p5.Vector.random2D();
     this.color = color(random(colors));
-    this.color.setAlpha(200)
-    this.r = r;
+    this.color.setAlpha(200);
+    this.r = 2 + lerp(minRadius, maxRadius, noise(this.p.x * 0.01, this.p.y * 0.01));
     this.force = createVector(0, 0);
     this.neighbors = 0;
 
@@ -45,20 +45,13 @@ function MyShape({
 
             this.velocity.mult(drag);
         }
-        // if (this.neighbors > 0) {
-        //     // this.force.div(this.neighbors * this.mass());
-        // } else {
-        //     if (this.force.magSq() != 0) {
-        //         print("huh");
-        //     }
-        //     this.velocity.mult(drag);
-        // }
         this.force.limit(maxForce)
         this.force.div(this.mass());
         this.velocity.add(this.force);
         this.p.add(this.velocity);
         this.force.set(0, 0);
         this.neighbors = 0;
+        this.r = 2 + lerp(minRadius, maxRadius, noise(this.p.x * 0.01, this.p.y * 0.01));
     };
 
     this.checkBorders = function() {

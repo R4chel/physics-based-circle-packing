@@ -67,7 +67,7 @@ type Sign
 
 
 type alias Particle =
-    { position : Vec Float
+    { position : Vec Int
     , velocity : Vec Float
     , r : Int
     , color : Color
@@ -103,9 +103,9 @@ updateParticle : Config -> Particle -> Particle
 updateParticle config particle =
     let
         position =
-            Vec2.add particle.position particle.velocity
-                |> Vec2.mapX (clamp 0 (toFloat config.width))
-                |> Vec2.mapY (clamp 0 (toFloat config.height))
+            Vec2.add particle.position (Vec2.truncate particle.velocity)
+                |> Vec2.mapX (clamp 0 config.width)
+                |> Vec2.mapY (clamp 0 config.height)
     in
     { particle | position = position }
 
@@ -113,8 +113,8 @@ updateParticle config particle =
 viewParticle : Particle -> Svg.Svg msg
 viewParticle particle =
     circle
-        [ cx (String.fromFloat (Vec2.getX particle.position))
-        , cy (String.fromFloat (Vec2.getY particle.position))
+        [ cx (String.fromInt (Vec2.getX particle.position))
+        , cy (String.fromInt (Vec2.getY particle.position))
         , r (String.fromInt particle.r)
         , fill (Color.toCssString particle.color)
         ]
@@ -127,9 +127,17 @@ pairwiseForce p1 p2 =
         zeroVector
 
     else
-        Vec2.direction p1.position p2.position
+        let
+            pos1 =
+                Vec2.toFloat p1.position
+        in
+        let
+            pos2 =
+                Vec2.toFloat p2.position
+        in
+        Vec2.direction pos1 pos2
             -- it is not necessary to scale each pair by forceConstant, can just multiply the sum after all the force calculations
-            |> Vec2.scale (toFloat (forceConstant * charge p1 * charge p2) / Vec2.distanceSquared p1.position p2.position)
+            |> Vec2.scale (toFloat (forceConstant * charge p1 * charge p2) / Vec2.distanceSquared pos1 pos2)
 
 
 
@@ -160,7 +168,7 @@ init () =
             { config = config
             , particles = []
             , gravityWell =
-                Particle (vec2 (config.width / 2) (config.height / 2)) zeroVector 100 Color.black Negative
+                Particle (vec2 (config.width // 2) (config.height // 2)) zeroVector 100 Color.black Negative
             }
     in
     ( model
@@ -222,12 +230,11 @@ update msg model =
             ( step model, Cmd.none )
 
 
-positionGenerator : Config -> Random.Generator (Vec Float)
+positionGenerator : Config -> Random.Generator (Vec Int)
 positionGenerator config =
     Random.map2 vec2
         (Random.int 0 config.width)
         (Random.int 0 config.height)
-        |> Random.map Vec2.toFloat
 
 
 colorGenerator : Random.Generator Color

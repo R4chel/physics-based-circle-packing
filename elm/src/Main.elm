@@ -5,7 +5,7 @@ import Browser.Events exposing (onAnimationFrame, onClick)
 import Color exposing (Color)
 import Html exposing (Html, button, div, text)
 import Json.Decode as D
-import Math.Vector2 exposing (..)
+import Math.Vector2 as Vec2 exposing (Vec, vec2)
 import Random
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -43,16 +43,22 @@ type alias Config =
 
 type alias Particle =
     { position : Vec Int
+    , velocity : Vec Int
     , r : Int
     , color : Color
     }
 
 
+updateParticle : Particle -> Particle
+updateParticle particle =
+    { particle | position = Vec2.add particle.position particle.velocity }
+
+
 viewParticle : Particle -> Svg.Svg msg
 viewParticle particle =
     circle
-        [ cx (String.fromInt (getX particle.position))
-        , cy (String.fromInt (getY particle.position))
+        [ cx (String.fromInt (Vec2.getX particle.position))
+        , cy (String.fromInt (Vec2.getY particle.position))
         , r (String.fromInt particle.r)
         , fill (Color.toCssString particle.color)
         ]
@@ -99,6 +105,11 @@ type Msg
     | Step
 
 
+step : Model -> Model
+step model =
+    { model | particles = List.map updateParticle model.particles }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -113,7 +124,7 @@ update msg model =
             )
 
         Step ->
-            ( model, Cmd.none )
+            ( step model, Cmd.none )
 
 
 positionGenerator : Config -> Random.Generator (Vec Int)
@@ -134,8 +145,9 @@ colorGenerator =
 
 particleGenerator : Config -> Random.Generator Particle
 particleGenerator config =
-    Random.map3 Particle
+    Random.map4 Particle
         (positionGenerator config)
+        (Random.constant (Vec2.vec2 0 0))
         (Random.int config.minRadius config.maxRadius)
         colorGenerator
 

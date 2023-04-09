@@ -1,8 +1,10 @@
 module Main exposing (..)
 
 import Browser
+import Browser.Events exposing (onAnimationFrame, onClick)
 import Color exposing (Color)
 import Html exposing (Html, button, div, text)
+import Json.Decode as D
 import Random
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -28,7 +30,7 @@ main =
 type alias Config =
     { width : Int
     , height : Int
-    , maxShapes : Int
+    , maxParticles : Int
     , minRadius : Int
     , maxRadius : Int
     }
@@ -73,7 +75,7 @@ init () =
         config =
             { width = 500
             , height = 500
-            , maxShapes = 10
+            , maxParticles = 10
             , minRadius = 5
             , maxRadius = 50
             }
@@ -93,7 +95,8 @@ init () =
 
 type Msg
     = AddParticle Particle
-    | NewParticle
+    | GenerateParticle
+    | Step
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -104,10 +107,13 @@ update msg model =
             , Cmd.none
             )
 
-        NewParticle ->
+        GenerateParticle ->
             ( model
             , Random.generate AddParticle (particleGenerator model.config)
             )
+
+        Step ->
+            ( model, Cmd.none )
 
 
 colorGenerator : Random.Generator Color
@@ -134,7 +140,15 @@ particleGenerator config =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ if List.length model.particles <= model.config.maxParticles then
+            onAnimationFrame (\_ -> GenerateParticle)
+
+          else
+            Sub.none
+        , onAnimationFrame (\_ -> Step)
+        , onClick (D.succeed GenerateParticle)
+        ]
 
 
 

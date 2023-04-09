@@ -30,7 +30,7 @@ main =
 type alias Config =
     { width : Int
     , height : Int
-    , maxParticles : Int
+    , initialParticles : Int
     , minRadius : Int
     , maxRadius : Int
     }
@@ -75,7 +75,7 @@ init () =
         config =
             { width = 500
             , height = 500
-            , maxParticles = 10
+            , initialParticles = 10
             , minRadius = 5
             , maxRadius = 50
             }
@@ -141,7 +141,7 @@ particleGenerator config =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ if List.length model.particles <= model.config.maxParticles then
+        [ if List.length model.particles <= model.config.initialParticles then
             onAnimationFrame (\_ -> GenerateParticle)
 
           else

@@ -88,9 +88,15 @@ applyForce particle force =
     { particle | velocity = Vec2.add particle.velocity acceleration }
 
 
-updateParticle : Particle -> Particle
-updateParticle particle =
-    { particle | position = Vec2.add particle.position particle.velocity }
+updateParticle : Config -> Particle -> Particle
+updateParticle config particle =
+    let
+        position =
+            Vec2.add particle.position particle.velocity
+                |> Vec2.mapX (clamp 0 (toFloat config.width))
+                |> Vec2.mapY (clamp 0 (toFloat config.height))
+    in
+    { particle | position = position }
 
 
 viewParticle : Particle -> Svg.Svg msg
@@ -176,7 +182,7 @@ step model =
                     calculateForce model.particles index particle |> applyForce particle
                 )
                 model.particles
-                |> List.map updateParticle
+                |> List.map (updateParticle model.config)
     in
     { model | particles = particles }
 

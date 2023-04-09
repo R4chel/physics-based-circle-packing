@@ -30,6 +30,9 @@ function MyShape({
     this.force = createVector(0, 0);
     this.neighbors = 0;
 
+    this.updateRadius = function() {
+        this.r = 2 + lerp(minRadius, maxRadius, noise(this.p.x * 0.01, this.p.y * 0.01));
+    }
 
     this.mass = function() {
         return this.r * this.r * density
@@ -51,7 +54,6 @@ function MyShape({
         this.p.add(this.velocity);
         this.force.set(0, 0);
         this.neighbors = 0;
-        this.r = 2 + lerp(minRadius, maxRadius, noise(this.p.x * 0.01, this.p.y * 0.01));
     };
 
     this.checkBorders = function() {
@@ -84,7 +86,8 @@ function setup() {
     colorMode(RGB, 255);
     colors = [color(236, 232, 125), color(52, 115, 76), color(83, 176, 193)];
 
-    var gui = createGui('Gooey gui');
+    var gui = createGui('Debugging gui');
+    gui.setPosition(windowWidth + 50, windowHeight + 50);
     gui.addGlobals(
         'drag',
         'forceConstant',
@@ -142,17 +145,23 @@ function calculateForce(shapes, i) {
 function draw() {
     background(240);
 
-    let maximumForce = 0
+    let maximumForce = 0;
+
+    // update radius' before doing anthing else because radius effects force 
     for (let i = 0; i < shapes.length; i++) {
         let s = shapes[i];
-        s.draw();
+        s.updateRadius();
+    }
+    for (let i = 0; i < shapes.length; i++) {
+        let s = shapes[i];
+        s.updateRadius();
         s.checkBorders();
         calculateForce(shapes, i);
         maximumForce = max(s.force.mag(), maximumForce)
         s.update();
+        s.draw();
     }
 
-    print(maximumForce)
     if (maximumForce == 0) {
         shapes.push(new MyShape({
             x: random(width),

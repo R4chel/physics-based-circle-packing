@@ -147,7 +147,7 @@ pairwiseForce p1 p2 =
 type alias Model =
     { config : Config
     , particles : List Particle
-    , gravityWell : Particle
+    , fixedParticles : List Particle
     }
 
 
@@ -164,11 +164,17 @@ init () =
             }
     in
     let
+        cornerCharge position =
+            Particle position zeroVector 200 Color.black Positive
+    in
+    let
         model =
             { config = config
             , particles = []
-            , gravityWell =
+            , fixedParticles =
+                -- gravitywell
                 Particle (vec2 (config.width // 2) (config.height // 2)) zeroVector 100 Color.black Negative
+                    :: List.map cornerCharge [ vec2 0 0, vec2 0 config.height, vec2 config.width config.height, vec2 config.width 0 ]
             }
     in
     ( model
@@ -190,6 +196,10 @@ step : Model -> Model
 step model =
     -- opportunity for memoization and other performance improvements but initial goal is have something that works slowly but works
     let
+        allParticles =
+            model.particles ++ model.fixedParticles
+    in
+    let
         particles =
             List.indexedMap
                 (\index particle ->
@@ -201,10 +211,8 @@ step model =
                             else
                                 pairwiseForce particle other
                         )
-                        model.particles
+                        allParticles
                         |> List.foldl Vec2.add zeroVector
-                        |> Vec2.add
-                            (pairwiseForce particle model.gravityWell)
                         |> applyForce particle
                 )
                 model.particles

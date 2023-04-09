@@ -5,6 +5,7 @@ import Browser.Events exposing (onAnimationFrame, onClick)
 import Color exposing (Color)
 import Html exposing (Html, button, div, text)
 import Json.Decode as D
+import Math.Vector2 exposing (..)
 import Random
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -41,8 +42,7 @@ type alias Config =
 
 
 type alias Particle =
-    { x : Int
-    , y : Int
+    { position : Vec Int
     , r : Int
     , color : Color
     }
@@ -51,8 +51,8 @@ type alias Particle =
 viewParticle : Particle -> Svg.Svg msg
 viewParticle particle =
     circle
-        [ cx (String.fromInt particle.x)
-        , cy (String.fromInt particle.y)
+        [ cx (String.fromInt (getX particle.position))
+        , cy (String.fromInt (getY particle.position))
         , r (String.fromInt particle.r)
         , fill (Color.toCssString particle.color)
         ]
@@ -116,6 +116,13 @@ update msg model =
             ( model, Cmd.none )
 
 
+positionGenerator : Config -> Random.Generator (Vec Int)
+positionGenerator config =
+    Random.map2 vec2
+        (Random.int 0 config.width)
+        (Random.int 0 config.height)
+
+
 colorGenerator : Random.Generator Color
 colorGenerator =
     Random.map4 Color.rgba
@@ -127,9 +134,8 @@ colorGenerator =
 
 particleGenerator : Config -> Random.Generator Particle
 particleGenerator config =
-    Random.map4 Particle
-        (Random.int 0 config.width)
-        (Random.int 0 config.height)
+    Random.map3 Particle
+        (positionGenerator config)
         (Random.int config.minRadius config.maxRadius)
         colorGenerator
 

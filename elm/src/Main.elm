@@ -17,7 +17,7 @@ import Svg.Attributes exposing (..)
 
 forceConstant : Int
 forceConstant =
-    1
+    10
 
 
 density : Int
@@ -61,17 +61,28 @@ type alias Config =
 -- Particle
 
 
+type Sign
+    = Positive
+    | Negative
+
+
 type alias Particle =
     { position : Vec Float
     , velocity : Vec Float
     , r : Int
     , color : Color
+    , sign : Sign
     }
 
 
 charge : Particle -> Int
 charge particle =
-    particle.r
+    case particle.sign of
+        Positive ->
+            particle.r
+
+        Negative ->
+            -1 * particle.r
 
 
 mass : Particle -> Float
@@ -112,9 +123,13 @@ viewParticle particle =
 
 pairwiseForce : Particle -> Particle -> Vec Float
 pairwiseForce p1 p2 =
-    Vec2.direction p1.position p2.position
-        -- it is not necessary to scale each pair by forceConstant, can just multiply the sum after all the force calculations
-        |> Vec2.scale (toFloat (forceConstant * charge p1 * charge p2) / Vec2.distanceSquared p1.position p2.position)
+    if p1.position == p2.position then
+        zeroVector
+
+    else
+        Vec2.direction p1.position p2.position
+            -- it is not necessary to scale each pair by forceConstant, can just multiply the sum after all the force calculations
+            |> Vec2.scale (toFloat (forceConstant * charge p1 * charge p2) / Vec2.distanceSquared p1.position p2.position)
 
 
 
@@ -124,6 +139,7 @@ pairwiseForce p1 p2 =
 type alias Model =
     { config : Config
     , particles : List Particle
+    , gravityWell : Particle
     }
 
 
@@ -141,7 +157,11 @@ init () =
     in
     let
         model =
-            { config = config, particles = [] }
+            { config = config
+            , particles = []
+            , gravityWell =
+                Particle (vec2 (config.width / 2) (config.height / 2)) zeroVector 100 Color.black Negative
+            }
     in
     ( model
     , Random.generate AddParticle (particleGenerator config)
@@ -158,20 +178,6 @@ type Msg
     | Step
 
 
-calculateForce : List Particle -> Int -> Particle -> Vec Float
-calculateForce particles index particle =
-    List.indexedMap
-        (\j other ->
-            if j == index then
-                zeroVector
-
-            else
-                pairwiseForce particle other
-        )
-        particles
-        |> List.foldl Vec2.add zeroVector
-
-
 step : Model -> Model
 step model =
     -- opportunity for memoization and other performance improvements but initial goal is have something that works slowly but works
@@ -179,7 +185,19 @@ step model =
         particles =
             List.indexedMap
                 (\index particle ->
-                    calculateForce model.particles index particle |> applyForce particle
+                    List.indexedMap
+                        (\j other ->
+                            if j == index then
+                                zeroVector
+
+                            else
+                                pairwiseForce particle other
+                        )
+                        model.particles
+                        |> List.foldl Vec2.add zeroVector
+                        |> Vec2.add
+                            (pairwiseForce particle model.gravityWell)
+                        |> applyForce particle
                 )
                 model.particles
                 |> List.map (updateParticle model.config)
@@ -223,11 +241,12 @@ colorGenerator =
 
 particleGenerator : Config -> Random.Generator Particle
 particleGenerator config =
-    Random.map4 Particle
+    Random.map5 Particle
         (positionGenerator config)
         (Random.constant zeroVector)
         (Random.int config.minRadius config.maxRadius)
         colorGenerator
+        (Random.constant Positive)
 
 
 

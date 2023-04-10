@@ -22,7 +22,7 @@ forceConstant =
 
 density : Float
 density =
-    1
+    0.5
 
 
 zeroVector : Vec Float
@@ -265,6 +265,13 @@ positionGenerator config =
         (Random.int 0 config.height)
 
 
+velocityGenerator : Random.Generator (Vec Float)
+velocityGenerator =
+    Random.map2 vec2
+        (Random.float -10 10)
+        (Random.float -1 1)
+
+
 colorGenerator : Random.Generator Color
 colorGenerator =
     Random.map4 Color.rgba
@@ -278,7 +285,7 @@ particleGenerator : Config -> Random.Generator Particle
 particleGenerator config =
     Random.map5 Particle
         (positionGenerator config)
-        (Random.constant zeroVector)
+        velocityGenerator
         (Random.int config.minRadius config.maxRadius)
         colorGenerator
         (Random.constant Positive)

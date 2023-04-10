@@ -30,6 +30,16 @@ zeroVector =
     vec2 0 0
 
 
+maxVelocityMagnitude : Float
+maxVelocityMagnitude =
+    100
+
+
+maxVelocityMagnitudeSquared : Float
+maxVelocityMagnitudeSquared =
+    maxVelocityMagnitude * maxVelocityMagnitude
+
+
 
 -- MAIN
 
@@ -96,7 +106,23 @@ applyForce particle force =
         acceleration =
             Vec2.divBy (mass particle) force
     in
-    { particle | velocity = Vec2.add particle.velocity acceleration }
+    let
+        uncheckedVelocity =
+            Vec2.add particle.velocity acceleration
+    in
+    let
+        magnitudeSquared =
+            Vec2.lengthSquared uncheckedVelocity
+    in
+    let
+        velocity =
+            if magnitudeSquared <= maxVelocityMagnitudeSquared then
+                uncheckedVelocity
+
+            else
+                Vec2.normalize uncheckedVelocity |> Vec2.scale maxVelocityMagnitude
+    in
+    { particle | velocity = velocity }
 
 
 updateParticle : Config -> Particle -> Particle
@@ -123,9 +149,8 @@ updateParticle config particle =
     let
         position =
             Vec2.add particle.position (Vec2.truncate velocity)
-
-        -- |> Vec2.mapX (clamp 0 config.width)
-        -- |> Vec2.mapY (clamp 0 config.height)
+                |> Vec2.mapX (clamp -particle.r (config.width + particle.r))
+                |> Vec2.mapY (clamp -particle.r (config.height + particle.r))
     in
     { particle | position = position, velocity = velocity }
 

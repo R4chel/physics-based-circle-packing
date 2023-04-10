@@ -1,6 +1,7 @@
 # physics-based-circle-packing
 Exploration of circle packing using a physics simulation of repelling particles. (For the loosest definition of all of those words). 
 
+Here is a link to the p5.js implementation fo this idea: https://r4chel.github.io/physics-based-circle-packing/
 
 I will be implementing the algorithm in a few languages.
 

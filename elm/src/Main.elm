@@ -20,7 +20,7 @@ forceConstant =
     10
 
 
-density : Int
+density : Float
 density =
     1
 
@@ -87,7 +87,7 @@ charge particle =
 
 mass : Particle -> Float
 mass particle =
-    density * particle.r * particle.r |> toFloat
+    density * toFloat (particle.r * particle.r)
 
 
 applyForce : Particle -> Vec Float -> Particle
@@ -102,12 +102,32 @@ applyForce particle force =
 updateParticle : Config -> Particle -> Particle
 updateParticle config particle =
     let
-        position =
-            Vec2.add particle.position (Vec2.truncate particle.velocity)
-                |> Vec2.mapX (clamp 0 config.width)
-                |> Vec2.mapY (clamp 0 config.height)
+        velocity =
+            particle.velocity
+                |> (\v ->
+                        if Vec2.getX particle.position < 0 || Vec2.getX particle.position > config.width then
+                            Vec2.mapX negate v
+
+                        else
+                            v
+                   )
+                |> Vec2.mapY
+                    (\vy ->
+                        if Vec2.getY particle.position < 0 || Vec2.getY particle.position > config.height then
+                            -1 * vy
+
+                        else
+                            vy
+                    )
     in
-    { particle | position = position }
+    let
+        position =
+            Vec2.add particle.position (Vec2.truncate velocity)
+
+        -- |> Vec2.mapX (clamp 0 config.width)
+        -- |> Vec2.mapY (clamp 0 config.height)
+    in
+    { particle | position = position, velocity = velocity }
 
 
 viewParticle : Particle -> Svg.Svg msg

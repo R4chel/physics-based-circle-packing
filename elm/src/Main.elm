@@ -3,7 +3,7 @@ module Main exposing (..)
 import Browser
 import Browser.Events exposing (onAnimationFrame, onClick)
 import Color exposing (Color)
-import Html exposing (Html, button, div, text)
+import Html exposing (Html)
 import Json.Decode as D
 import Math.Vector2 as Vec2 exposing (Vec, vec2)
 import Random
@@ -105,16 +105,13 @@ applyForce particle force =
     let
         acceleration =
             Vec2.divBy (mass particle) force
-    in
-    let
+
         uncheckedVelocity =
             Vec2.add particle.velocity acceleration
-    in
-    let
+
         magnitudeSquared =
             Vec2.lengthSquared uncheckedVelocity
-    in
-    let
+
         velocity =
             if magnitudeSquared <= maxVelocityMagnitudeSquared then
                 uncheckedVelocity
@@ -145,8 +142,7 @@ updateParticle config particle =
                         else
                             vy
                     )
-    in
-    let
+
         position =
             Vec2.add particle.position (Vec2.truncate velocity)
                 |> Vec2.mapX (clamp -particle.r (config.width + particle.r))
@@ -175,8 +171,7 @@ pairwiseForce p1 p2 =
         let
             pos1 =
                 Vec2.toFloat p1.position
-        in
-        let
+
             pos2 =
                 Vec2.toFloat p2.position
         in
@@ -207,12 +202,10 @@ init () =
             , maxRadius = 50
             , forceConstant = 1
             }
-    in
-    let
+
         cornerCharge position =
             Particle position zeroVector 200 Color.black Positive
-    in
-    let
+
         model =
             { config = config
             , particles = []
@@ -243,8 +236,7 @@ step model =
     let
         allParticles =
             model.particles ++ model.fixedParticles
-    in
-    let
+
         particles =
             List.indexedMap
                 (\index particle ->

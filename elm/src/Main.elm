@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (Config, Model, Msg(..), Particle, Position, Sign, main)
 
 import Browser
 import Browser.Events exposing (onAnimationFrame, onClick)
@@ -44,6 +44,7 @@ maxVelocityMagnitudeSquared =
 -- MAIN
 
 
+main : Program () Model Msg
 main =
     Browser.element
         { init = init
@@ -76,8 +77,12 @@ type Sign
     | Negative
 
 
+type alias Position =
+    Vec Int
+
+
 type alias Particle =
-    { position : Vec Int
+    { position : Position
     , velocity : Vec Float
     , r : Int
     , color : Color
@@ -103,15 +108,19 @@ mass particle =
 applyForce : Particle -> Vec Float -> Particle
 applyForce particle force =
     let
+        acceleration : Vec Float
         acceleration =
             Vec2.divBy (mass particle) force
 
+        uncheckedVelocity : Vec Float
         uncheckedVelocity =
             Vec2.add particle.velocity acceleration
 
+        magnitudeSquared : Float
         magnitudeSquared =
             Vec2.lengthSquared uncheckedVelocity
 
+        velocity : Vec Float
         velocity =
             if magnitudeSquared <= maxVelocityMagnitudeSquared then
                 uncheckedVelocity
@@ -125,6 +134,7 @@ applyForce particle force =
 updateParticle : Config -> Particle -> Particle
 updateParticle config particle =
     let
+        velocity : Vec Float
         velocity =
             particle.velocity
                 |> (\v ->
@@ -143,6 +153,7 @@ updateParticle config particle =
                             vy
                     )
 
+        position : Position
         position =
             Vec2.add particle.position (Vec2.truncate velocity)
                 |> Vec2.mapX (clamp -particle.r (config.width + particle.r))
@@ -169,9 +180,11 @@ pairwiseForce p1 p2 =
 
     else
         let
+            pos1 : Vec Float
             pos1 =
                 Vec2.toFloat p1.position
 
+            pos2 : Vec Float
             pos2 =
                 Vec2.toFloat p2.position
         in
@@ -194,6 +207,7 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init () =
     let
+        config : Config
         config =
             { width = 500
             , height = 500
@@ -203,9 +217,11 @@ init () =
             , forceConstant = 1
             }
 
+        cornerCharge : Position -> Particle
         cornerCharge position =
             Particle position zeroVector 200 Color.black Positive
 
+        model : Model
         model =
             { config = config
             , particles = []
@@ -234,9 +250,11 @@ step : Model -> Model
 step model =
     -- opportunity for memoization and other performance improvements but initial goal is have something that works slowly but works
     let
+        allParticles : List Particle
         allParticles =
             model.particles ++ model.fixedParticles
 
+        particles : List Particle
         particles =
             List.indexedMap
                 (\index particle ->
@@ -275,7 +293,7 @@ update msg model =
             ( step model, Cmd.none )
 
 
-positionGenerator : Config -> Random.Generator (Vec Int)
+positionGenerator : Config -> Random.Generator Position
 positionGenerator config =
     Random.map2 vec2
         (Random.int 0 config.width)

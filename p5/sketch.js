@@ -4,7 +4,7 @@ let colors;
 const maxRadiusRatio = 15;
 const minRadiusRatio = 1000;
 let minRadius, maxRadius;
-const initialShapes = 125;
+const initialShapes = 200;
 var density = 1
 var forceConstant = 0.05
 var drag = 0.9

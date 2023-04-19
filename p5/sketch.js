@@ -86,7 +86,6 @@ function setup() {
     colorMode(RGB, 255);
     colors = [color(236, 232, 125), color(52, 115, 76), color(83, 176, 193)];
 
-<<<<<<< HEAD
     gui.setPosition(windowWidth + 50, windowHeight + 50);
     gui.addGlobals(
         'drag',
@@ -96,8 +95,6 @@ function setup() {
         'maxForce'
     );
 
-=======
->>>>>>> f9fa36a (get rid of gui in deployed version)
     noStroke();
     shapes = [...new Array(initialShapes)].map(() => new MyShape({
         x: random(width),
